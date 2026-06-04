@@ -165,8 +165,8 @@
             text: "Я очнулся в груде бетона. Голова гудит, будто после взрыва. Рядом – ни души. Только ветер шелестит пеплом и где-то вдалеке хрип заражённых.",
             background: "bg-ruins",
             choices: [
-                { text: "🧭 Осмотреться и позвать группу", next: "find_group" },
-                { text: "💊 Попытаться вспомнить, что случилось", next: "memory_fragments" }
+                { text: "Осмотреться и позвать группу", next: "find_group" },
+                { text: "Попытаться вспомнить, что случилось", next: "memory_fragments" }
             ]
         },
         find_group: {
@@ -228,8 +228,8 @@
             text: "— Смотрите, я нашёл военный планшет! Карта с идеально ровными секторами заражения, будто зону очертили карандашом...",
             background: "bg-basement",
             choices: [
-                { text: "🔍 Попытаться включить планшет", next: "tablet_on", actions: () => { gameState.evidence = true; gameState.trust_irina += 1; } },
-                { text: "⚠️ Выбросить, могут быть маячки слежения", next: "tablet_off", actions: () => { gameState.trust_irina -= 1; } }
+                { text: "Попытаться включить планшет", next: "tablet_on", actions: () => { gameState.evidence = true; gameState.trust_irina += 1; } },
+                { text: "Выбросить, могут быть маячки слежения", next: "tablet_off", actions: () => { gameState.trust_irina -= 1; } }
             ]
         },
         tablet_on: {
@@ -282,8 +282,8 @@
             text: "Вы проникаете на базу. Учёный в панике: «Вирус «Молчание» — искусственный. Коалиция стран хотела этнической чистки региона. Спецназ уже идёт! Бегите!»",
             background: "bg-base",
             choices: [
-                { text: "🛡️ Помочь учёным спасти данные", next: "save_data_end", actions: () => { gameState.evidence = true; gameState.side = "resistance"; } },
-                { text: "🏃 Спасать только свою группу", next: "save_group_end", actions: () => { gameState.side = "neutral"; } }
+                { text: "Помочь учёным спасти данные", next: "save_data_end", actions: () => { gameState.evidence = true; gameState.side = "resistance"; } },
+                { text: "Спасать только свою группу", next: "save_group_end", actions: () => { gameState.side = "neutral"; } }
             ]
         },
         save_data_end: {
