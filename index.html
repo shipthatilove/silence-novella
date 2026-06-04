@@ -8,7 +8,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            user-select: none; /* чтобы текст не выделялся */
+            user-select: none;
         }
 
         body {
@@ -21,7 +21,6 @@
             padding: 20px;
         }
 
-        /* Контейнер игры — он же фон меняется через классы */
         #game {
             position: relative;
             max-width: 1000px;
@@ -32,25 +31,23 @@
             background-blend-mode: overlay;
             border-radius: 28px;
             padding: 30px 40px 40px 40px;
-            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.5);
             transition: background-image 0.5s ease;
             color: #f0f0f0;
         }
 
-        /* Классы для фонов (замените имена файлов на свои) */
-        .bg-ruins { background-image: url('images/street_ruins.jpg'); background-size: cover; background-position: center 30%; }
-        .bg-pharmacy { background-image: url('images/pharmacy.jpg'); background-size: cover; background-position: center; }
-        .bg-basement { background-image: url('images/basement.jpg'); background-size: cover; background-position: center; }
-        .bg-border { background-image: url('images/border_fence.jpg'); background-size: cover; background-position: center; }
-        .bg-base { background-image: url('images/military_base.jpg'); background-size: cover; background-position: center; }
-        .bg-war { background-image: url('images/war_zone.jpg'); background-size: cover; background-position: center; }
-        .bg-safe { background-image: url('images/safe_house.jpg'); background-size: cover; background-position: center; }
+        /* ФОНЫ — используем ваши имена файлов */
+        .bg-ruins { background-image: url('images/image.jpg'); background-size: cover; background-position: center; }
+        .bg-hospital { background-image: url('images/hospital.jpg'); background-size: cover; background-position: center; }
+        .bg-base { background-image: url('images/base.jpg'); background-size: cover; background-position: center; }
+        .bg-safe { background-image: url('images/base.jpg'); background-size: cover; background-position: center; }  /* убежище = base.jpg */
+        .bg-default { background-image: none; background-color: #111; }
+
+        /* Фоны для концовок — нужно сгенерировать */
         .bg-resistance { background-image: url('images/resistance.jpg'); background-size: cover; background-position: center; }
         .bg-collab { background-image: url('images/hq_office.jpg'); background-size: cover; background-position: center; }
         .bg-refugee { background-image: url('images/refugee_camp.jpg'); background-size: cover; background-position: center; }
-        .bg-default { background-image: none; background-color: #111; }
 
-        /* Окно диалога */
         .dialogue-box {
             background: rgba(10, 10, 15, 0.85);
             backdrop-filter: blur(8px);
@@ -60,10 +57,8 @@
             border-left: 5px solid #e67e22;
             font-size: 1.2rem;
             line-height: 1.5;
-            text-shadow: 0 1px 2px black;
         }
 
-        /* Имя говорящего */
         .speaker {
             font-size: 0.9rem;
             font-weight: bold;
@@ -73,7 +68,6 @@
             text-transform: uppercase;
         }
 
-        /* Контейнер кнопок выбора */
         .choices-container {
             margin-top: 30px;
             display: flex;
@@ -81,7 +75,6 @@
             gap: 12px;
         }
 
-        /* Стильные кнопки */
         .choice-btn {
             background: linear-gradient(95deg, #2c3e50, #1a2632);
             border: none;
@@ -90,27 +83,17 @@
             color: #ecf0f1;
             font-size: 1.05rem;
             font-weight: 600;
-            font-family: inherit;
             cursor: pointer;
             transition: all 0.25s ease;
             text-align: left;
-            letter-spacing: 0.5px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .choice-btn:hover {
             background: linear-gradient(95deg, #e67e22, #c0392b);
             transform: translateX(8px) scale(1.01);
-            box-shadow: 0 8px 18px rgba(0,0,0,0.4);
-            color: white;
         }
 
-        .choice-btn:active {
-            transform: scale(0.98);
-        }
-
-        /* Индикатор прогресса или доверия (необязательно) */
         .trust-badge {
             position: absolute;
             bottom: 20px;
@@ -121,48 +104,35 @@
             border-radius: 20px;
             color: #aaa;
         }
-
-        /* Адаптация под мобильные */
-        @media (max-width: 700px) {
-            #game { padding: 20px; }
-            .dialogue-box { padding: 15px; font-size: 1rem; }
-            .choice-btn { padding: 10px 16px; font-size: 0.9rem; }
-        }
     </style>
 </head>
 <body>
 <div id="game" class="bg-ruins">
     <div class="dialogue-box">
         <div class="speaker" id="speakerName">Артём</div>
-        <div id="dialogueText">Загрузка истории...</div>
+        <div id="dialogueText">Загрузка...</div>
     </div>
     <div class="choices-container" id="choicesContainer"></div>
     <div class="trust-badge" id="trustDisplay"></div>
 </div>
 
 <script>
-    // ---------------------- ПЕРЕМЕННЫЕ СОСТОЯНИЯ ----------------------
     let gameState = {
-        trust_irina: 0,     // от -2 до +2
+        trust_irina: 0,
         trust_misha: 0,
         evidence: false,
-        side: "neutral"     // neutral, resistance, military
+        side: "neutral"
     };
 
-    // Вспомогательная функция обновления отображения доверия (чисто для отладки, можно убрать)
     function updateTrustUI() {
         let el = document.getElementById("trustDisplay");
         if (el) el.innerText = `Ирина: ${gameState.trust_irina} | Миша: ${gameState.trust_misha} | улики: ${gameState.evidence}`;
     }
 
-    // ---------------------- СЦЕНЫ (УЗЛЫ) ----------------------
-    // Каждая сцена содержит текст, имя говорящего, фон, массив вариантов выбора
-    // и опционально действия (actions), которые меняют gameState
     const scenes = {
-        // ----- ВСТУПЛЕНИЕ: пост-апокалипсис -----
         start: {
             speaker: "Артём",
-            text: "Я очнулся в груде бетона. Голова гудит, будто после взрыва. Рядом – ни души. Только ветер шелестит пеплом и где-то вдалеке хрип заражённых.",
+            text: "Я очнулся в груде бетона. Голова гудит. Рядом – ни души. Только ветер шелестит пеплом и хрип заражённых.",
             background: "bg-ruins",
             choices: [
                 { text: "Осмотреться и позвать группу", next: "find_group" },
@@ -171,7 +141,7 @@
         },
         find_group: {
             speaker: "Артём",
-            text: "— Эй! Есть кто живой? Из-за обломков появляются Ирина и Миша. Ирина: «Ты жив… чудо. Мы думали, всё.»",
+            text: "— Есть кто живой? Из-за обломков появляются Ирина и Миша. Ирина: «Ты жив… чудо.»",
             background: "bg-ruins",
             choices: [
                 { text: "Спросить, что произошло", next: "ask_what_happened", actions: () => { gameState.trust_irina += 1; } },
@@ -180,17 +150,17 @@
         },
         memory_fragments: {
             speaker: "Артём",
-            text: "Вспышка: баррикады у больницы, крики, потом темнота. Вирус мутировал, заражённые стали агрессивнее. Нужно найти убежище.",
+            text: "Вспышка: баррикады у больницы, крики, потом темнота. Вирус мутировал.",
             background: "bg-ruins",
             choices: [
-                { text: "Пойти в аптеку за лекарствами", next: "pharmacy_path" },
-                { text: "Искать подвал, чтобы переждать", next: "basement_path" }
+                { text: "Пойти в аптеку", next: "pharmacy_path" },
+                { text: "Искать подвал", next: "basement_path" }
             ]
         },
         ask_what_happened: {
             speaker: "Ирина",
-            text: "— Вирус мутировал. Заражённые почти не спят, рвутся к теплу. Мы отступали три дня. Аптека на той улице — последний шанс.",
-            background: "bg-ruins",
+            text: "Вирус мутировал. Заражённые почти не спят. Мы отступали три дня. Аптека — последний шанс.",
+            background: "bg-hospital",
             choices: [
                 { text: "Пойти в аптеку", next: "pharmacy_path" },
                 { text: "Уйти в подвал", next: "basement_path" }
@@ -198,7 +168,7 @@
         },
         silent_walk: {
             speaker: "Ирина",
-            text: "— Ты как? Сильно ударился? Артём молчит, оглядывая руины. Ирина вздыхает: «Ладно, идём. Нужны медикаменты.»",
+            text: "— Ты как? Артём молчит. Ирина: «Ладно, идём. Нужны медикаменты.»",
             background: "bg-ruins",
             choices: [
                 { text: "Направиться в аптеку", next: "pharmacy_path" },
@@ -207,79 +177,73 @@
         },
         pharmacy_path: {
             speaker: "Артём",
-            text: "Внутри аптеки разгром, но несколько упаковок антибиотиков уцелели. Ирина собирает бинты и антисептик. «Этого нам хватит на неделю».",
-            background: "bg-pharmacy",
+            text: "Внутри аптеки разгром, но нашлись антибиотики и бинты. Ирина: «Этого хватит на неделю.»",
+            background: "bg-hospital",
             choices: [
-                { text: "Вернуться в убежище и обсудить план", next: "strange_findings", actions: () => { gameState.trust_irina += 1; } }
+                { text: "Вернуться в убежище", next: "strange_findings", actions: () => { gameState.trust_irina += 1; } }
             ]
         },
         basement_path: {
             speaker: "Миша",
-            text: "В подвале сыро, но безопасно. Есть старые консервы и вода. Ирина: «Риск не оправдан, здесь переждём.»",
-            background: "bg-basement",
+            text: "В подвале сыро, но безопасно. Есть консервы и вода. Ирина: «Риск не оправдан.»",
+            background: "bg-default",
             choices: [
-                { text: "Осмотреть подвал подробнее", next: "strange_findings", actions: () => { gameState.trust_irina -= 1; } }
+                { text: "Осмотреть подвал", next: "strange_findings", actions: () => { gameState.trust_irina -= 1; } }
             ]
         },
-
-        // ----- ГЛАВА 2: СТРАННЫЕ НЕСООТВЕТСТВИЯ -----
         strange_findings: {
             speaker: "Миша",
-            text: "— Смотрите, я нашёл военный планшет! Карта с идеально ровными секторами заражения, будто зону очертили карандашом...",
-            background: "bg-basement",
+            text: "Я нашёл военный планшет! Карта с идеально ровными секторами заражения...",
+            background: "bg-default",
             choices: [
-                { text: "Попытаться включить планшет", next: "tablet_on", actions: () => { gameState.evidence = true; gameState.trust_irina += 1; } },
-                { text: "Выбросить, могут быть маячки слежения", next: "tablet_off", actions: () => { gameState.trust_irina -= 1; } }
+                { text: "Включить планшет", next: "tablet_on", actions: () => { gameState.evidence = true; gameState.trust_irina += 1; } },
+                { text: "Выбросить", next: "tablet_off", actions: () => { gameState.trust_irina -= 1; } }
             ]
         },
         tablet_on: {
             speaker: "Артём",
-            text: "Экран загорается. Текст: «Объект «Чистилище». Периметр стабилен. Контейнер герметичен. Потери гражданских – 97%». Ирина: «Нас… изолировали специально?»",
-            background: "bg-basement",
+            text: "Экран: «Объект «Чистилище». Периметр стабилен. Контейнер герметичен. Потери – 97%». Ирина: «Нас изолировали специально?»",
+            background: "bg-default",
             choices: [
-                { text: "Решить идти к границе зоны", next: "border_crossing" }
+                { text: "Идти к границе зоны", next: "border_crossing" }
             ]
         },
         tablet_off: {
             speaker: "Ирина",
-            text: "— Это военное. Могут быть жучки. Выброси! Артём колеблется, но в итоге швыряет планшет в угол. Чувство тревоги усиливается.",
-            background: "bg-basement",
+            text: "— Выброси, это военное. Могут быть маячки. Артём колеблется, но швыряет планшет.",
+            background: "bg-default",
             choices: [
                 { text: "Всё равно проверить границу", next: "border_crossing" }
             ]
         },
-
-        // ----- ГЛАВА 3: ГРАНИЦА И ПРАВДА -----
         border_crossing: {
             speaker: "Артём",
-            text: "Добираемся до окраины. Заражённых становится всё меньше, потом они исчезают совсем. Высокий забор под напряжением, а за ним — огни мирного города.",
-            background: "bg-border",
+            text: "Заражённые пропадают. Высокий забор под напряжением, а за ним — огни города.",
+            background: "bg-default",
             choices: [
                 { text: "Перелезть через забор", next: "cross_fence" },
-                { text: "Найти КПП и поговорить с военными", next: "checkpoint_talk" }
+                { text: "Найти КПП", next: "checkpoint_talk" }
             ]
         },
         cross_fence: {
             speaker: "Артём",
-            text: "За забором — патруль. Солдаты в новой экипировке: «Нарушители! Немедленно вернитесь в санитарную зону». Артём: «Какую зону?! Это геноцид!»",
-            background: "bg-border",
+            text: "За забором — патруль. Солдаты: «Нарушители! Вернитесь в зону!» Артём: «Это геноцид!»",
+            background: "bg-default",
             choices: [
-                { text: "Отступить, но запомнить", next: "military_base_raid" }
+                { text: "Отступить и проследить за военными", next: "military_base_raid" }
             ]
         },
         checkpoint_talk: {
             speaker: "Офицер",
-            text: "— Вы из «контейнера»? Возвращайтесь, пока не поздно. Регион объявлен карантинным. Вирус рукотворный? Я ничего не подтверждаю. Уходите.",
-            background: "bg-border",
+            text: "— Вы из «контейнера»? Возвращайтесь. Вирус рукотворный? Я ничего не подтверждаю.",
+            background: "bg-default",
             choices: [
-                { text: "Проследить за военными до базы", next: "military_base_raid", actions: () => { gameState.evidence = true; } }
+                { text: "Проследить до базы", next: "military_base_raid", actions: () => { gameState.evidence = true; } }
             ]
         },
-
-        // ----- ГЛАВА 4: СЕКРЕТНАЯ БАЗА И ШТУРМ -----
         military_base_raid: {
             speaker: "Учёный",
-            text: "Вы проникаете на базу. Учёный в панике: «Вирус «Молчание» — искусственный. Коалиция стран хотела этнической чистки региона. Спецназ уже идёт! Бегите!»",
+            text: "Вы проникли на базу. Учёный: «Вирус «Молчание» — искусственный. Спецназ уже идёт! Бегите!»",
             background: "bg-base",
             choices: [
                 { text: "Помочь учёным спасти данные", next: "save_data_end", actions: () => { gameState.evidence = true; gameState.side = "resistance"; } },
@@ -288,98 +252,80 @@
         },
         save_data_end: {
             speaker: "Артём",
-            text: "Хватаю жёсткий диск. Мы прорываемся сквозь огонь. Два учёных погибают, но доказательства у нас. В эфире — новости об утечке. Начинается мировой скандал.",
-            background: "bg-war",
+            text: "Хватаю жёсткий диск. Прорываемся сквозь огонь. Доказательства у нас. Начинается мировой скандал.",
+            background: "bg-default",
             choices: [
-                { text: "Что дальше? →", next: "final_branch" }
+                { text: "Что дальше?", next: "final_branch" }
             ]
         },
         save_group_end: {
             speaker: "Артём",
-            text: "Бросаем всё, уходим подземными туннелями. Базу стирают с лица земли. Слышны обрывки: «биологическое оружие», «ультиматумы». Мир скатывается в войну.",
-            background: "bg-war",
+            text: "Бросаем всё, уходим туннелями. Базу стирают. Мир скатывается в войну.",
+            background: "bg-default",
             choices: [
-                { text: "Что дальше? →", next: "final_branch" }
+                { text: "Что дальше?", next: "final_branch" }
             ]
         },
-
-        // ----- ФИНАЛЬНОЕ ВЕТВЛЕНИЕ (зависит от переменных) -----
         final_branch: {
             speaker: "Система",
-            text: "Мир рухнул. Война полыхает. Заражённые теряют центральную роль. Настал момент последнего выбора.",
-            background: "bg-war",
+            text: "Мир рухнул. Война полыхает. Настал момент последнего выбора.",
+            background: "bg-default",
             choices: []
         }
     };
 
-    // ----- ДИНАМИЧЕСКИЕ КОНЦОВКИ (определяются после final_branch) -----
     function getEndingScene() {
-        // Каноническая (спасение близких) — если side == neutral ИЛИ (доверие высокое, но улики не использованы)
         if (gameState.side === "neutral" || (gameState.trust_irina >= 1 && !gameState.evidence)) {
             return {
                 speaker: "Артём",
-                text: "Я принимаю решение: мы не остановим эту войну. Но мы можем выжить. Ирина, Миша и я уходим в нейтральные горы. Где-то далеко рвутся бомбы, но здесь, в маленьком убежище, есть тишина. Истина о вирусе осталась похороненной, но для нашей семьи это уже не важно.",
+                text: "Я принимаю решение: мы не остановим войну, но мы можем выжить. Ирина, Миша и я уходим в нейтральные горы. Здесь есть тишина.",
                 background: "bg-safe",
-                choices: [{ text: "Каноническая концовка — начать сначала", next: "start" }]
+                choices: [{ text: "Начать заново", next: "start" }]
             };
-        }
-        // Концовка сопротивления
-        else if (gameState.side === "resistance" || gameState.evidence === true) {
+        } else if (gameState.side === "resistance" || gameState.evidence === true) {
             return {
                 speaker: "Артём",
-                text: "Мы передаём данные в трибунал. Правда всплывает, но война уже не остановима. Я становлюсь символом сопротивления. Спустя год меня хоронят под обломками штаба, но моё имя вырезано на мемориале. Вирус создали люди — и люди его остановили ценой миллионов.",
+                text: "Мы передаём данные в трибунал. Правда всплывает, но война не остановима. Моё имя вырезано на мемориале.",
                 background: "bg-resistance",
-                choices: [{ text: "Концовка сопротивления — пройти заново", next: "start" }]
+                choices: [{ text: "Начать заново", next: "start" }]
             };
-        }
-        // Концовка коллаборациониста (если доверие низкое и evidence false)
-        else if (gameState.trust_irina <= -1 && !gameState.evidence) {
+        } else if (gameState.trust_irina <= -1 && !gameState.evidence) {
             return {
                 speaker: "Артём",
-                text: "Я решаю быть с сильными. Вступаю в армию, которая всё это начала. Мне дают новое лицо, я помогаю заметать следы. Ирина и Миша отказываются идти со мной. Годы спустя я сижу в кабинете, пью виски и смотрю на фото разрушенного города. Мы победили. Но каждую ночь мне снятся крики людей в «контейнере».",
+                text: "Я вступаю в армию, которая всё это начала. Мне дают новое лицо. Каждую ночь мне снятся крики людей в «контейнере».",
                 background: "bg-collab",
-                choices: [{ text: "Концовка коллаборациониста — начать сначала", next: "start" }]
+                choices: [{ text: "Начать заново", next: "start" }]
             };
-        }
-        // Концовка отверженных (запасная)
-        else {
+        } else {
             return {
                 speaker: "Артём",
-                text: "Я пытаюсь вывести группу за периметр. Нас ловят, допрашивают, отправляют в лагерь. Миша умирает от болезни, Ирина кончает с собой. Меня возвращают в зону навсегда. Над пустыми улицами воет ветер. Здесь нет ни заражённых, ни живых.",
+                text: "Меня ловят, допрашивают, отправляют в лагерь. Миша умирает, Ирина кончает с собой. Над пустыми улицами воет ветер.",
                 background: "bg-refugee",
-                choices: [{ text: "Концовка отверженных — попробовать ещё раз", next: "start" }]
+                choices: [{ text: "Попробовать ещё раз", next: "start" }]
             };
         }
     }
 
-    // ----- ОСНОВНОЙ ЦИКЛ ИГРЫ (рендер текущей сцены) -----
     let currentSceneId = "start";
 
     function renderScene(sceneId) {
         let scene;
         if (sceneId === "final_branch") {
-            // Подставляем динамическую концовку
             scene = getEndingScene();
         } else {
             scene = scenes[sceneId];
-            if (!scene) {
-                console.error("Сцена не найдена:", sceneId);
-                scene = scenes.start;
-            }
+            if (!scene) scene = scenes.start;
         }
 
-        // Обновляем фон
         const gameDiv = document.getElementById("game");
         if (gameDiv) {
-            gameDiv.className = ""; // сброс
+            gameDiv.className = "";
             gameDiv.classList.add(scene.background || "bg-default");
         }
 
-        // Обновляем имя говорящего и текст
         document.getElementById("speakerName").innerText = scene.speaker || "...";
         document.getElementById("dialogueText").innerText = scene.text;
 
-        // Генерируем кнопки выбора
         const container = document.getElementById("choicesContainer");
         container.innerHTML = "";
         if (scene.choices && scene.choices.length > 0) {
@@ -388,17 +334,14 @@
                 btn.className = "choice-btn";
                 btn.innerText = choice.text;
                 btn.onclick = () => {
-                    // Выполняем действия, если они есть (изменение gameState)
                     if (choice.actions) choice.actions();
-                    // Переход к следующей сцене
                     currentSceneId = choice.next;
-                    updateTrustUI();   // обновляем отображение скрытых переменных
+                    updateTrustUI();
                     renderScene(currentSceneId);
                 };
                 container.appendChild(btn);
             });
         } else {
-            // Запасной вариант: если концовка не имеет кнопок (не должно случиться)
             const btn = document.createElement("button");
             btn.className = "choice-btn";
             btn.innerText = "Начать заново";
@@ -411,7 +354,6 @@
         updateTrustUI();
     }
 
-    // Сброс состояния игры
     function resetGame() {
         gameState = {
             trust_irina: 0,
@@ -423,7 +365,6 @@
         updateTrustUI();
     }
 
-    // Запуск игры
     window.onload = () => {
         resetGame();
         renderScene("start");
