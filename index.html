@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Предел тишины</title>
+    <style>
+        body { margin: 0; background: #111; color: #fff; font-family: sans-serif; }
+        #game { position: relative; max-width: 800px; margin: 0 auto; padding: 20px; background: #000000aa; border-radius: 15px; min-height: 400px; }
+        #dialogue { font-size: 1.2em; margin-bottom: 20px; }
+        .choice-btn { display: block; margin: 10px; padding: 10px; background: #333; color: white; border: none; cursor: pointer; border-radius: 5px; }
+        .choice-btn:hover { background: #555; }
+        #choices { margin-top: 20px; }
+    </style>
+</head>
+<body>
+<div id="game">
+    <div id="dialogue"></div>
+    <div id="choices"></div>
+</div>
+
+<script>
+    let story = {
+        start: {
+            text: "Вы очнулись в разрушенном городе. Что делать?",
+            choices: [
+                { text: "Осмотреться", next: "scene2" },
+                { text: "Позвать на помощь", next: "scene3" }
+            ]
+        },
+        scene2: {
+            text: "Вы нашли аптечку с медикаментами. Удача!",
+            choices: [
+                { text: "Начать заново", next: "start" }
+            ]
+        },
+        scene3: {
+            text: "На ваш крик прибежали заражённые... Игра окончена.",
+            choices: [
+                { text: "Начать заново", next: "start" }
+            ]
+        }
+    };
+
+    let currentScene = "start";
+
+    function updateGame() {
+        let scene = story[currentScene];
+        document.getElementById("dialogue").innerHTML = scene.text;
+        let choicesHtml = "";
+        for (let choice of scene.choices) {
+            choicesHtml += `<button class="choice-btn" onclick="goTo('${choice.next}')">${choice.text}</button>`;
+        }
+        document.getElementById("choices").innerHTML = choicesHtml;
+    }
+
+    function goTo(nextScene) {
+        currentScene = nextScene;
+        updateGame();
+    }
+
+    updateGame();
+</script>
+</body>
+</html>
